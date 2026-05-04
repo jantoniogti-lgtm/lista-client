@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPTV PRO USERS</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="IPTV PRO USERS">
+
+<style>
+body {font-family: Arial; background:#0f172a; color:white; margin:5px;}
+h1 {text-align:center; font-size:20px;}
+.card {background:#1e293b; padding:12px; border-radius:12px; margin-bottom:8px; text-align:center;}
+button {width:100%; padding:14px; margin-top:6px; border:none; border-radius:10px; background:#22c55e; color:white; font-size:16px;}
+input, select {width:100%; padding:12px; margin:5px 0; border-radius:10px; border:none;}
+.urgente {background:#7f1d1d;}
+.dashboard {display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
+</style>
+</head>
+
+<body>
+
+<h1>📱 IPTV PRO USERS</h1>
+
+<div class="dashboard">
+<div class="card">💰 <span id="cobrado">0€</span></div>
+<div class="card">💸 <span id="pendiente">0€</span></div>
+<div class="card">👥 <span id="total">0</span></div>
+<div class="card">❌ <span id="pendientes">0</span></div>
+</div>
+
+<div id="lista"></div>
+
+<form id="form">
+<input id="nombre" placeholder="Nombre" required>
+<input type="date" id="fecha" required>
+<input type="number" id="precio" placeholder="Precio" required>
+<input id="telefono" placeholder="Teléfono">
+<select id="pagado">
+<option value="si">Pagado</option>
+<option value="no">No pagado</option>
+</select>
+<button>Añadir cliente</button>
+</form>
+
+<button onclick="exportar()">📊 Exportar Excel</button>
+
+<script>
+let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+
+function fechaFinal(f){
+  let d=new Date(f);
+  d.setFullYear(d.getFullYear()+1);
+  return d.toISOString().split('T')[0];
+}
+
+function dias(f){
+  return Math.ceil((new Date(f)-new Date())/(1000*60*60*24));
+}
+
+function render(){
+let cobrado=0, pendiente=0, pendientes=0;
+let html="";
+
+let lista = usuarios.filter(u=>u.pagado==="no")
+.sort((a,b)=>dias(a.fin)-dias(b.fin));
+
+lista.forEach(u=>{
+let i = usuarios.indexOf(u);
+let d = dias(u.fin);
+
+pendiente += Number(u.precio)||0;
+pendientes++;
+
+html+=`
+<div class="card ${d<=5?'urgente':''}">
+${u.nombre}<br>
+${u.precio}€ - ${d} días
+<button onclick="pagar(${i})">💰 Cobrar</button>
+</div>`;
+});
+
+usuarios.forEach(u=>{
+if(u.pagado==="si") cobrado += Number(u.precio)||0;
+});
+
+document.getElementById("lista").innerHTML = html || "Todo cobrado 👍";
+document.getElementById("cobrado").innerText = cobrado+"€";
+document.getElementById("pendiente").innerText = pendiente+"€";
+document.getElementById("total").innerText = usuarios.length;
+document.getElementById("pendientes").innerText = pendientes;
+}
+
+form.onsubmit=e=>{
+e.preventDefault();
+
+usuarios.push({
+nombre:nombre.value,
+fecha:fecha.value,
+fin:fechaFinal(fecha.value),
+precio:precio.value,
+pagado:pagado.value,
+telefono:telefono.value
+});
+
+localStorage.setItem('usuarios', JSON.stringify(usuarios));
+form.reset();
+render();
+};
+
+function pagar(i){
+usuarios[i].pagado="si";
+localStorage.setItem('usuarios', JSON.stringify(usuarios));
+render();
+}
+
+function exportar(){
+let data = "Nombre,Fecha,Fin,Precio,Pagado\n";
+
+usuarios.forEach(u=>{
+data+=`${u.nombre},${u.fecha},${u.fin},${u.precio},${u.pagado}\n`;
+});
+
+let blob = new Blob([data], {type:"text/csv"});
+let a = document.createElement("a");
+a.href = URL.createObjectURL(blob);
+a.download = "usuarios.csv";
+a.click();
+}
+
+render();
+</script>
+
+</body>
+</html>
