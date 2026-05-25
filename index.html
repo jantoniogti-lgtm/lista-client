@@ -1,1 +1,77 @@
-<html><body><h1>PLX MAX IPTV</h1></body></html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLX MAX IPTV</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+body{margin:0;background:#0b0b0b;color:white;font-family:Arial}
+header{background:#111;color:#e50914;text-align:center;padding:20px;font-size:32px;font-weight:bold}
+.player{padding:20px}
+video{width:100%;border-radius:16px;background:black}
+.controls{padding:20px;display:flex;gap:10px}
+input{flex:1;padding:14px;border:none;border-radius:10px;background:#1c1c1c;color:white}
+button{padding:14px 20px;border:none;border-radius:10px;background:#e50914;color:white;font-weight:bold}
+.channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;padding:20px}
+.card{background:#1d1d1d;padding:30px;border-radius:16px;text-align:center;cursor:pointer}
+.live{background:#e50914;padding:4px 10px;border-radius:50px;font-size:12px;display:inline-block;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<header>PLX MAX IPTV</header>
+
+<div class="player">
+<video id="video" controls autoplay playsinline></video>
+</div>
+
+<div class="controls">
+<input type="text" id="streamUrl" placeholder="Pega URL .m3u8">
+<button onclick="loadCustom()">REPRODUCIR</button>
+</div>
+
+<div class="channels">
+
+<div class="card" onclick="loadChannel('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')">
+<div class="live">LIVE</div>
+<h2>SPORT TV</h2>
+</div>
+
+<div class="card" onclick="loadChannel('https://test-streams.mux.dev/test_001/stream.m3u8')">
+<div class="live">LIVE</div>
+<h2>MOVIES HD</h2>
+</div>
+
+<div class="card" onclick="loadChannel('https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8')">
+<div class="live">LIVE</div>
+<h2>NEWS 24</h2>
+</div>
+
+</div>
+
+<script>
+const video = document.getElementById('video');
+let hls;
+
+function loadChannel(url){
+if(hls){hls.destroy();}
+if(Hls.isSupported()){
+hls = new Hls();
+hls.loadSource(url);
+hls.attachMedia(video);
+}else{
+video.src = url;
+}
+}
+
+function loadCustom(){
+const url = document.getElementById('streamUrl').value;
+if(url.trim() !== ''){loadChannel(url);}
+}
+
+loadChannel('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8');
+</script>
+
+</body>
+</html>
